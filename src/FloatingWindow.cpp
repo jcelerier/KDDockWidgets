@@ -78,9 +78,10 @@ FloatingWindow::~FloatingWindow()
 void FloatingWindow::maybeCreateResizeHandler()
 {
     if (!KDDockWidgets::supportsNativeTitleBar()) {
+#if !defined(Q_OS_WIN)
         setWindowFlag(Qt::FramelessWindowHint, true);
         setWidgetResizeHandler(new WidgetResizeHandler(this));
-        m_vlayout->setContentsMargins(4, 4, 4, 4);
+#endif
     }
 }
 
@@ -158,3 +159,13 @@ void FloatingWindow::updateTitleBarVisibility()
 
     m_titleBar->setVisible(visible);
 }
+
+#if defined(Q_OS_WIN)
+bool FloatingWindow::nativeEvent(const QByteArray &eventType, void *message, long *result)
+{
+    if (KDDockWidgets::resizeHandlerNativeEvent(this, eventType, message, result))
+        return true;
+
+    return QWidget::nativeEvent(eventType, message, result);
+}
+#endif

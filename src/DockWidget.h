@@ -85,6 +85,9 @@ protected:
     void closeEvent(QCloseEvent *) override;
     std::unique_ptr<WindowBeingDragged> makeWindow() override;
     void paintEvent(QPaintEvent *) override;
+#if defined(Q_OS_WIN)
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result) override;
+#endif
 
 #if defined(DOCKS_DEVELOPER_MODE)
 public Q_SLOTS:

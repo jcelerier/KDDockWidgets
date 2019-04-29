@@ -58,6 +58,9 @@ Q_SIGNALS:
 protected:
     void closeEvent(QCloseEvent *) override;
     void paintEvent(QPaintEvent *) override;
+#if defined(Q_OS_WIN)
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result) override;
+#endif
 
 private:
     Q_DISABLE_COPY(FloatingWindow)

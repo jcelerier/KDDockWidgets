@@ -103,10 +103,12 @@ DockWidget::DockWidget(const QString &name, Options options, QWidget *parent, Qt
     DockRegistry::self()->registerDockWidget(this);
     qCDebug(creation) << "DockWidget" << this;
 
+#if !defined(Q_OS_WIN)
     if (!KDDockWidgets::supportsNativeTitleBar()) {
         setWindowFlag(Qt::FramelessWindowHint, true);
         setWidgetResizeHandler(new WidgetResizeHandler(this));
     }
+#endif
 
     if (name.isEmpty())
         qWarning() << Q_FUNC_INFO << "Name can't be null";
@@ -263,6 +265,16 @@ void DockWidget::paintEvent(QPaintEvent *)
     if (isWindow())
         FloatingWindow::paintFrame(this);
 }
+
+#if defined(Q_OS_WIN)
+bool DockWidget::nativeEvent(const QByteArray &eventType, void *message, long *result)
+{
+    if (KDDockWidgets::resizeHandlerNativeEvent(this, eventType, message, result))
+        return true;
+
+    return QWidget::nativeEvent(eventType, message, result);
+}
+#endif
 
 TitleBar *DockWidget::titleBar() const
 {
