@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${ECM_MODULE_DIR})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-option(OPTION_DEVELOPER_MODE "Developer Mode" OFF)
+option(OPTION_DEVELOPER_MODE "Developer Mode" ON)
 option(OPTION_ASAN_SUPPORT "Activate support for using ASAN" OFF)
 
 
