@@ -36,6 +36,7 @@ namespace KDDockWidgets {
 struct AnchorGroup;
 class MultiSplitterLayout;
 class Frame;
+class DockWidget;
 
 struct GeometryDiff
 {
@@ -108,6 +109,7 @@ public:
     bool eventFilter(QObject *, QEvent *) override;
 
     Frame* frame() const;
+    QWidget *window() const;
     QWidget *parentWidget() const;
 
     MultiSplitterLayout *layout() const;
@@ -132,6 +134,14 @@ public:
     QSize minimumSize() const;
     QSize minimumSizeHint() const;
 
+    bool isPlaceholder() const;
+
+    ///@brief turns the placeholder into a normal Item again showing @p dockWidget
+    void restorePlaceholder(DockWidget *dockWidget, int tabIndex);
+
+    void ref();
+    void unref();
+    int refCount() const; // for tests
 private:
     class Private;
     Private *const d;

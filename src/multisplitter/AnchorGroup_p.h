@@ -38,6 +38,7 @@ struct AnchorGroup {
     void addItem(Item *item);
     void addItem(MultiSplitterLayout *);
     void removeItem(Item *item);
+    void turnIntoPlaceholder();
     bool isValid() const { return top && left && bottom && right; }
 
     int width() const;
@@ -50,6 +51,7 @@ struct AnchorGroup {
     Anchor *anchor(KDDockWidgets::Location) const;
     Anchor *anchor(Anchor::Side side, Qt::Orientation orientation) const;
     void setAnchor(Anchor *anchor, KDDockWidgets::Location);
+    Anchor *anchorFollowing() const;
 
     Anchor *top = nullptr;
     Anchor *left = nullptr;
