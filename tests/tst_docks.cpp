@@ -3341,7 +3341,6 @@ void TestDocks::tst_startHidden()
         QCOMPARE(layout->numAchorsFollowing(), 0);
 
         m->addDockWidget(dock2, Location_OnTop);
-
         layout->checkSanity();
 
         QCOMPARE(layout->count(), 2);
@@ -3349,6 +3348,7 @@ void TestDocks::tst_startHidden()
         QCOMPARE(layout->numAchorsFollowing(), 1);
 
         dock1->show();
+
         QCOMPARE(layout->count(), 2);
         QCOMPARE(layout->placeholderCount(), 0);
         QCOMPARE(layout->numAchorsFollowing(), 0);
@@ -3364,8 +3364,8 @@ void TestDocks::tst_startHidden()
 
         auto dropArea = qobject_cast<DropArea*>(m->centralWidget());
         MultiSplitterLayout *layout = dropArea->multiSplitter();
-
         m->addDockWidget(dock1, Location_OnLeft, nullptr, AddingOption_StartHidden);
+
         m->addDockWidget(dock2, Location_OnBottom, nullptr, AddingOption_StartHidden);
         m->addDockWidget(dock3, Location_OnRight, nullptr, AddingOption_StartHidden);
 

@@ -345,6 +345,7 @@ void MultiSplitterLayout::addItems_internal(const ItemList &items, bool updateCo
             Q_EMIT widgetAdded(item);
         }
     }
+    updateAnchorFollowing();
     Q_EMIT widgetCountChanged(m_items.size());
 }
 
@@ -1286,14 +1287,6 @@ void MultiSplitterLayout::ensureHasAvailableSize(QSize needed)
 void MultiSplitterLayout::restorePlaceholder(Item *item)
 {
     AnchorGroup anchorGroup = item->anchorGroup();
-    Anchor::List anchorsFollowing = anchorGroup.anchorsFollowingInwards();
-    if (anchorsFollowing.isEmpty()) {
-        // There's no separator to move, it means it's a static anchor group (layout is empty, so the anchors
-        // are the actual borders of the window
-        Q_ASSERT(anchorGroup.isStatic());
-        anchorGroup.updateItemSizes();
-        return;
-    }
 
     const QSize availableSize = this->availableSize();
     const QSize widgetMinSize = { qMax(30, KDDockWidgets::widgetMinLength(item->frame(), Qt::Vertical)),
@@ -1306,8 +1299,23 @@ void MultiSplitterLayout::restorePlaceholder(Item *item)
     ensureHasAvailableSize(newSize);
 
     item->setIsPlaceholder(false);
-
     updateSizeConstraints();
+
+
+    Anchor::List anchorsFollowing = anchorGroup.anchorsFollowingInwards();
+    if (anchorsFollowing.isEmpty()) {
+        // There's no separator to move, it means it's a static anchor group (layout is empty, so the anchors
+        // are the actual borders of the window
+        dumpDebug();
+        qDebug() << "Group was " << anchorGroup;
+        Q_ASSERT(anchorGroup.isStaticOrFollowsStatic());
+        anchorGroup.updateItemSizes();
+        return;
+    }
+
+    updateAnchorFollowing();
+
+
 
     if (!anchorsFollowing.contains(anchorGroup.top) && !anchorsFollowing.contains(anchorGroup.bottom)) {
         anchorGroup.top->updateItemSizes();
@@ -1319,19 +1327,7 @@ void MultiSplitterLayout::restorePlaceholder(Item *item)
     }
 
     for (Anchor *anchorFollowingInwards : anchorsFollowing) {
-        const Anchor::Side outterSide = anchorGroup.sideForAnchor(anchorFollowingInwards);
-        if (anchorFollowingInwards->onlyHasPlaceholderItems(outterSide)) {
-            Anchor *anchorToFollow = anchorFollowingInwards->findNearestAnchorWithItems(outterSide);
-            if (anchorToFollow->followee() != anchorFollowingInwards)
-                anchorFollowingInwards->setFollowee(anchorToFollow);
-            else
-                anchorFollowingInwards->setFollowee(nullptr);
-        } else {
-            anchorFollowingInwards->setFollowee(nullptr);
-        }
-
-        if (anchorFollowingInwards->followee() == nullptr) {
-
+        if (!anchorFollowingInwards->isFollowing()) {
             const Qt::Orientation orientation = anchorFollowingInwards->orientation();
             Anchor *side1Anchor = anchorGroup.anchorAtSide(Anchor::Side1, orientation); // returns the left if vertical, otherwise top
             Anchor *side2Anchor = anchorGroup.anchorAtSide(Anchor::Side2, orientation); // returns the right if vertical, otherwise bottom
@@ -1487,6 +1483,26 @@ void MultiSplitterLayout::updateAnchorsFromTo(Anchor *oldAnchor, Anchor *newAnch
 
                 Q_ASSERT(false);
             }
+        }
+    }
+}
+
+void MultiSplitterLayout::updateAnchorFollowing()
+{
+    for (Anchor *anchor : m_anchors) {
+        if (anchor->isStatic())
+            continue;
+
+        if (anchor->onlyHasPlaceholderItems(Anchor::Side2)) {
+            Anchor *toFollow = anchor->findNearestAnchorWithItems(Anchor::Side2);
+            anchor->setFollowee(toFollow);
+            Q_ASSERT(anchor != toFollow->followee());
+        } else if (anchor->onlyHasPlaceholderItems(Anchor::Side1)) {
+            Anchor *toFollow = anchor->findNearestAnchorWithItems(Anchor::Side1);
+            if (toFollow->followee() != anchor)
+                anchor->setFollowee(toFollow);
+        } else {
+            anchor->setFollowee(nullptr);
         }
     }
 }
